@@ -6,7 +6,7 @@ class DeliciousRecommender
 	
 	attr_reader :users
 
-	def initialize(tag, count=5, user)
+	def initialize(tag, count, user)
 		@users = Hash.new {|h, k| h[k] = {}}
 		@delicious = DeliciousFeedReader.new
 
@@ -51,4 +51,7 @@ class DeliciousRecommender
 
 end
 
-@d = DeliciousRecommender.new("Ruby", 5, 'momoro')
+@d = DeliciousRecommender.new("Ruby", 5, 'elysiand')
+@d.top_matches("elysiand")
+@d.recommendations("elysiand")
+
