@@ -1,6 +1,8 @@
 class Rmend
   
   # Returns a distance-based similarity score for subject_a and subject_b
+  # subjects_ratings is a hash with format {"subject_a" => {"object_a" => 1.0, "object_b" => 0.0...}, "subject_b" => {"object_a" => 0.0, "object_c" => 1.0}}
+  # subject_a/b are keys of interest of the subjects_ratings hash
   def euclidean(subjects_ratings, subject_a, subject_b)
     subject_a_ratings = subjects_ratings[subject_a]
     subject_b_ratings = subjects_ratings[subject_b]
@@ -17,6 +19,8 @@ class Rmend
   end
   
   # Returns pearson correlation coefficient for subject_a and b
+  # subjects_ratings is a hash with format {"subject_a" => {"object_a" => 1.0, "object_b" => 0.0...}, "subject_b" => {"object_a" => 0.0, "object_c" => 1.0}}
+  # subject_a/b are keys of interest of the subjects_ratings hash
   def pearson(subjects_ratings, subject_a, subject_b)
     subject_a_ratings = subjects_ratings[subject_a]
     subject_b_ratings = subjects_ratings[subject_b]
@@ -40,6 +44,57 @@ class Rmend
     
     r = num/den
     return r
+  end
+  
+  # Returns the best matches for person from the prefs dictionary.
+  # Number of results is an optional param.
+  # The similarity method is a block.
+  def top_matches(subjects_ratings, subject, n=5)
+  	scores = subjects_ratings.map do |critic, objects|
+      unless subject == critic
+			  r = pearson(subjects_ratings, subject, critic)
+			  [r, critic]
+		  end
+  	end
+
+  	matches = scores.compact.sort.reverse[0..n-1]
+    return matches
+  end
+  
+  def recommendations(subjects_ratings, subject)
+    totals = {}
+    similarity_sums = {}
+    subject_objects = subjects_ratings[subject].keys
+    
+    subjects_ratings.keys.each do |critic|
+      next if subject == critic
+      similarity = pearson(subjects_ratings, subject, critic)
+      next if similarity <= 0
+      
+      critic_objects = subjects_ratings[critic].keys
+      critic_objects.each do |critic_object|
+        unless subject_objects.include? critic_object
+          totals[critic_object] ||= 0
+          totals[critic_object] += subjects_ratings[critic][critic_object] * similarity
+
+          similarity_sums[critic_object] ||= 0
+          similarity_sums[critic_object] += similarity
+        end
+      end
+      
+    end
+
+    rankings = []
+    
+    totals.each do |object, total|
+      rankings << [(total/similarity_sums[object]), object]
+    end
+
+    recs = rankings.sort.reverse
+    
+    p "recs: #{recs.inspect} -- TRACE:rmend.rb:"
+    
+    return recs
   end
   
 end

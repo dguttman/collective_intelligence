@@ -9,9 +9,10 @@ def build_merchant_list
 end
 
 def create_random_ratings(subjects, objects)
+  srand(400)
   subjects_ratings = {}
   subjects.each do |subject|
-    n = rand(objects.size - 3) + 1 + 3
+    n = rand(objects.size - 4) + 1 + 4
     m = objects.dup
     subjects_ratings[subject] = {}
     (1..n).each do |i|
@@ -27,30 +28,44 @@ describe Rmend do
     @merchants = build_merchant_list
     
     @users_ratings = create_random_ratings(@users, @merchants)
-    
+    @rmend = Rmend.new
     
     # user_a, user_b = users_ratings.keys[0], users_ratings.keys[-1]
     # users_ratings[user_a] = users_ratings[user_b]
   end
   
   it "should give euclidean distance" do
-    rmend = Rmend.new
     user_a = "alice"
     user_b = "pat"
-    rmend.euclidean(@users_ratings, user_a, user_a).should == 1
+    @rmend.euclidean(@users_ratings, user_a, user_a).should == 1
     
-    rmend.euclidean(@users_ratings, user_a, user_b).should <= 1
-    rmend.euclidean(@users_ratings, user_a, user_b).should >= 0
+    @rmend.euclidean(@users_ratings, user_a, user_b).should <= 1
+    @rmend.euclidean(@users_ratings, user_a, user_b).should >= 0
   end
   
   it "should give pearson r coefficient" do
-    rmend = Rmend.new
     user_a = "alice"
     user_b = "charlie"
-    rmend.pearson(@users_ratings, user_a, user_a).should == 1
+    @rmend.pearson(@users_ratings, user_a, user_a).should == 1
 
-    rmend.pearson(@users_ratings, user_a, user_b).should <= 1
-    rmend.pearson(@users_ratings, user_a, user_b).should >= -1
+    @rmend.pearson(@users_ratings, user_a, user_b).should <= 1
+    @rmend.pearson(@users_ratings, user_a, user_b).should >= -1
+  end
+  
+  it "should return top matches for a user" do
+    user_a = "alice"
+    matches = @rmend.top_matches(@users_ratings, user_a, 8)
+    matches.size.should == 8
+    matches.each do |m|
+      m[0].should <= 1
+      m[0].should >= -1
+    end
+  end
+  
+  it "should return recommended merchants for a user" do
+    user_a = "alice"
+    recs = @rmend.recommendations(@users_ratings, user_a)
+    recs.size.should == @merchants.size - @users_ratings[user_a].size
   end
   
 end
