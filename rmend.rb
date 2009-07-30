@@ -46,9 +46,8 @@ class Rmend
     return r
   end
   
-  # Returns the best matches for person from the prefs dictionary.
+  # Returns list of subjects most similar to the given subject
   # Number of results is an optional param.
-  # The similarity method is a block.
   def top_matches(subjects_ratings, subject, n=5)
   	scores = subjects_ratings.map do |critic, objects|
       unless subject == critic
@@ -61,6 +60,8 @@ class Rmend
     return matches
   end
   
+  # Returns list of objects unrated by the subject 
+  # With ratings weighted for the subject
   def recommendations(subjects_ratings, subject)
     totals = {}
     similarity_sums = {}
