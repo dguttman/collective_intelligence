@@ -1,13 +1,19 @@
 class Rmend
+  
+  # Returns a distance-based similarity score for user_a and user_b
+  def euclidean(users_ratings, user_a, user_b)
+    user_a_ratings, user_b_ratings = users_ratings[user_a], users_ratings[user_b]
+    objects = (user_a_ratings.keys + user_b_ratings.keys).uniq
+  end
+  
+end
+
+
+class OldRmend
   # Returns a distance-based similarity score for person1 and person2
   # Defines a 2-d pref space, then calculates the distance.
   def euclidean(people, person1, person2)
   	rating_diff = lambda {|item| 
-      p "person1: #{person1} -- TRACE:rmend.rb:"
-      p "person2: #{person2} -- TRACE:rmend.rb:"
-      p "item: #{item} -- TRACE:rmend.rb:"
-      p "people[person1][item]: #{people[person1][item]} -- TRACE:rmend.rb:"
-      p "people[person2][item]: #{people[person2][item]} -- TRACE:rmend.rb:"
   	  people[person1][item] - people[person2][item]
   	}
     
@@ -123,30 +129,4 @@ class Rmend
 
   end
 
-end
-
-@users = %w(alice bob charlie david edgar frank george howard ishmael kelly lisa mary nancy oliver pat)
-
-@merchants = %w(apple bestbuy cadillac dunkindonuts ecco frog guess hardrock)
-
-users_ratings = {}
-@users.each do |user|
-  n = rand(@merchants.size - 3) + 1 + 3
-  m = @merchants.dup
-  users_ratings[user] = {}
-  (1..n).each do |i|
-    users_ratings[user][m.delete_at(rand(m.size))] = 1.0
-  end
-end
-
-# user_a, user_b = users_ratings.keys[0], users_ratings.keys[-1]
-# users_ratings[user_a] = users_ratings[user_b]
-
-rmend = Rmend.new
-
-@users.each do |user|
-  @users.each do |user2|
-    next if user == user2
-    p rmend.euclidean(users_ratings, user, user2)
-  end
 end
