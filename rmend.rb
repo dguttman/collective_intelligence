@@ -1,9 +1,45 @@
 class Rmend
   
-  # Returns a distance-based similarity score for user_a and user_b
-  def euclidean(users_ratings, user_a, user_b)
-    user_a_ratings, user_b_ratings = users_ratings[user_a], users_ratings[user_b]
-    objects = (user_a_ratings.keys + user_b_ratings.keys).uniq
+  # Returns a distance-based similarity score for subject_a and subject_b
+  def euclidean(subjects_ratings, subject_a, subject_b)
+    subject_a_ratings = subjects_ratings[subject_a]
+    subject_b_ratings = subjects_ratings[subject_b]
+    objects = (subject_a_ratings.keys + subject_b_ratings.keys).uniq
+    
+    sum_diff_sq = 0.0
+    objects.each do |object|
+      a_rating = subject_a_ratings[object] || 0.0
+      b_rating = subject_b_ratings[object] || 0.0
+      diff_sq = (a_rating - b_rating) ** 2
+      sum_diff_sq += diff_sq
+    end
+    return 1 / (1 + sum_diff_sq)
+  end
+  
+  # Returns pearson correlation coefficient for subject_a and b
+  def pearson(subjects_ratings, subject_a, subject_b)
+    subject_a_ratings = subjects_ratings[subject_a]
+    subject_b_ratings = subjects_ratings[subject_b]
+    objects = subject_a_ratings.keys & subject_b_ratings.keys
+
+    n = objects.size
+    return 0 if n==0
+    
+    sum_a = objects.inject(0){|sum, object| sum + subject_a_ratings[object]}
+    sum_b = objects.inject(0){|sum, object| sum + subject_b_ratings[object]}
+    
+    sum_a_sq = objects.inject(0){|sum, object| sum + ( subject_a_ratings[object] ** 2 )}
+    sum_b_sq = objects.inject(0){|sum, object| sum + ( subject_b_ratings[object] ** 2 )}
+    
+    sum_products = objects.inject(0){|sum, object| sum + ( subject_a_ratings[object] * subject_b_ratings[object] )}
+
+    num = sum_products - (sum_a * sum_b / n)
+    den = Math.sqrt( (sum_a_sq - (sum_a ** 2)/n) * (sum_b_sq - (sum_b ** 2)/n) )
+
+    return 0 if den == 0
+    
+    r = num/den
+    return r
   end
   
 end
