@@ -35,8 +35,8 @@ describe FeedVectorGenerator do
     counts = word_counts[1]
     counts.class.should == Hash
     
-    counts.keys.map { |k| k.class.should == String }
-    counts.values.map { |v| v.class.should == Fixnum }
+    counts.keys.each { |k| k.class.should == String }
+    counts.values.each { |v| v.class.should == Fixnum }
     
   end
   
