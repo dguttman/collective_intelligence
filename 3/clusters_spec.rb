@@ -21,13 +21,13 @@ describe Clusters do
     col_names, row_names, data = Clusters.read_file("blogdata.txt")
     
     # Self correlation should be 1
-    Clusters.pearson(data[0], data[0]).should == 1
+    Clusters.pearson_dist(data[0], data[0]).should == 0.0
     # Correlation should be reflexive
-    Clusters.pearson(data[0], data[1]).should == Clusters.pearson(data[1], data[0])
+    Clusters.pearson_dist(data[0], data[1]).should == Clusters.pearson_dist(data[1], data[0])
     # Correlation should fall within range of -1 <= r <= 1
     data[1..-1].each_index do |i|
-      r = Clusters.pearson(data[i], data[i-1])
-      r.should >= -1 && r.should <= 1
+      r = Clusters.pearson_dist(data[i], data[i-1])
+      r.should <= 2 && r.should >= 0
     end
   end
   
