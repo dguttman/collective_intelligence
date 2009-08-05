@@ -13,12 +13,43 @@ class Clusters
       # First column in each row is the row name
       row_names << p[0]
       # The data for this row is the remainder of the row
+      row_data = []
       p[1..-1].each do |x|
-        data << x.to_f
+        row_data << x.to_f
       end
+      data << row_data
     end
     
     return row_names, col_names, data
+  end
+  
+  def self.pearson_dist(vector_a, vector_b)
+
+    n = vector_a.size
+    return 0 if n==0
+    
+    sum_a = vector_a.inject(0) { |sum, value| sum + value }
+    sum_b = vector_b.inject(0) { |sum, value| sum + value }
+    
+    sum_a_sq = vector_a.inject(0) { |sum, value| sum + ( value ** 2 ) }
+    sum_b_sq = vector_b.inject(0) { |sum, value| sum + ( value ** 2 ) }
+    
+    sum_products = 0
+    vector_a.each_with_index do |value_a, i|
+      value_b = vector_b[i]
+      sum_products += value_a * value_b
+    end
+    
+    num = sum_products - (sum_a * sum_b / n)
+    den = Math.sqrt( (sum_a_sq - (sum_a ** 2)/n) * (sum_b_sq - (sum_b ** 2)/n) )
+
+    if den == 0
+      r = 0 
+    else
+      r = num/den
+    end
+    
+    return 1.0 - r
   end
   
 end
