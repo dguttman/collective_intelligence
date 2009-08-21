@@ -1,7 +1,12 @@
 class Bicluster
   attr_reader :vec
 
-  def initialize(vec, left=nil, right=nil, distance=0.0, id=nil)
-    @vec, @left, @right, @distance, @id = vec, left, right, distance, id
+  def initialize(vec, params={})
+    @vec = vec
+    @left = params[:left] 
+    @right = params[:right]
+    @distance = params[:distance] 
+    @id = params[:id]
+    @distance ||= 0.0
   end
 end

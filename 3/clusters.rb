@@ -57,15 +57,49 @@ class Clusters
     current_cluster_id = -1
 
     # Clusters are initially just rows
-    cluster = []
+    clusters = []
     rows.each_index do |i| 
-      cluster << Bicluster.new(rows[i], id=i)
+      clusters << Bicluster.new( rows[i], {:id => i} )
     end
     
-    while cluster.size > 1
+    while clusters.size > 1
       lowest_pair = [0,1]
-      closest = pearson_dist(cluster[0.vec], cluster[1].vec)
+      closest = pearson_dist(clusters[0].vec, clusters[1].vec)
+      
+      # loop through every pair looking for the smallest distance
+      (0..clusters.size).each do |i|
+        ( (i+1)..clusters.size ).each do |j|
+          # distances is the cache of distance calculations
+          unless distances[ [ clusters[i].id, clusters[j].id ] ]
+            distances[ [ clusters[i].id, clusters[j].id ] ] = pearson_dist(clusters[i].vec, clusters[j].vec)
+            d = distances[ [ clusters[i].id, clusters[j].id ] ]
+            if d < closest
+              closest = d
+              lowest_pair = [i, j]
+            end  
+          end
+        end
+      end
+      
+      #calculate the average of the two clusters
+      close_vec_1 = clusters[ lowest_pair[0] ].vec
+      close_vec_2 = clusters[ lowest_pair[1] ].vec
+      merge_vec = []
+      close_vec_1.each_index do |i|
+        merge_vec[i] = ( close_vec_1[i] + close_vec_2[i] ) / 2.0
+      end
+      
+      #create the new cluster
+      new_cluster = Bicluster.new( merge_vec, { :left => clusters[lowest_pair[0]], :right => clusters[lowest_pair[1]], :distance => closest, :id => current_cluster_id } )
+      
+      #cluster ids that weren't in the original set are negative
+      current_cluster_id -= 1
+      clusters.delete_at(lowest_pair[1])
+      clusters.delete_at(lowest_pair[0])
+      clusters << new_cluster
     end
+    
+    return clusters[0]
 
   end
   
