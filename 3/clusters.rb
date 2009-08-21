@@ -51,5 +51,22 @@ class Clusters
     
     return 1.0 - r
   end
+
+  def h_cluster(rows)
+    distances = {}
+    current_cluster_id = -1
+
+    # Clusters are initially just rows
+    cluster = []
+    rows.each_index do |i| 
+      cluster << Bicluster.new(rows[i], id=i)
+    end
+    
+    while cluster.size > 1
+      lowest_pair = [0,1]
+      closest = pearson_dist(cluster[0.vec], cluster[1].vec)
+    end
+
+  end
   
 end
