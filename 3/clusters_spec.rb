@@ -20,11 +20,11 @@ describe Clusters do
   it "provide pearson correlation between vectors" do
     col_names, row_names, data = Clusters.read_file("blogdata.txt")
     
-    # Self correlation should be 1
+    # Distance to self should be 0
     Clusters.pearson_dist(data[0], data[0]).should == 0.0
-    # Correlation should be reflexive
+    # Distance should be reflexive
     Clusters.pearson_dist(data[0], data[1]).should == Clusters.pearson_dist(data[1], data[0])
-    # Correlation should fall within range of -1 <= r <= 1
+    # Distance should fall within range of 2 >= d >= 0
     data[1..-1].each_index do |i|
       r = Clusters.pearson_dist(data[i], data[i-1])
       r.should <= 2 && r.should >= 0
