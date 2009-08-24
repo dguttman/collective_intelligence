@@ -1,3 +1,6 @@
+require "RMagick"
+require "bicluster"
+
 class Clusters
   
   def self.read_file(filename)
@@ -52,7 +55,7 @@ class Clusters
     return 1.0 - r
   end
 
-  def h_cluster(rows)
+  def self.h_cluster(rows)
     distances = {}
     current_cluster_id = -1
 
@@ -61,14 +64,14 @@ class Clusters
     rows.each_index do |i| 
       clusters << Bicluster.new( rows[i], {:id => i} )
     end
-    
+
     while clusters.size > 1
       lowest_pair = [0,1]
       closest = pearson_dist(clusters[0].vec, clusters[1].vec)
       
       # loop through every pair looking for the smallest distance
-      (0..clusters.size).each do |i|
-        ( (i+1)..clusters.size ).each do |j|
+      ( 0..(clusters.size-1) ).each do |i|
+        ( (i+1)..(clusters.size-1) ).each do |j|
           # distances is the cache of distance calculations
           unless distances[ [ clusters[i].id, clusters[j].id ] ]
             distances[ [ clusters[i].id, clusters[j].id ] ] = pearson_dist(clusters[i].vec, clusters[j].vec)
@@ -102,5 +105,108 @@ class Clusters
     return clusters[0]
 
   end
-  
+
+  def self.print_cluster(cluster, labels=nil, n=0)
+    # indent to make a hierarchy layout
+    (0..n).each {|i| print ' ' }
+
+    if cluster.id < 0
+      # negative id means that this is branch
+      p '-' 
+    else
+      # positive id means that this is an endpoint
+      if labels == nil
+        p cluster.id
+      else
+        p labels[cluster.id]
+      end
+    end
+    
+    # now print the right and left branches
+    if cluster.left != nil
+      print_cluster(cluster.left, labels, n = n+1)
+    end
+
+    if cluster.right != nil
+      print_cluster(cluster.right, labels, n = n+1)
+    end
+
+  end
+
+  def self.get_height(cluster)
+    # is this an endpoint? Then the height is just 1
+    if cluster.left == nil && cluster.right == nil
+      return 1
+    end
+
+    # otherwise the height is the same as the heights of each branch
+    return get_height(cluster.left) + get_height(cluster.right)
+  end
+
+  def self.get_depth(cluster)
+    # The distance of an endpoint is 0.0
+    if cluster.left == nil && cluster.right == nil
+      return 0
+    end
+
+    # the distance of a branch is the greater of its two sides plus its own distance
+    return [ get_depth(cluster.left), get_depth(cluster.right) ].max + cluster.distance
+  end
+
+  def self.draw_dendrogram(cluster, labels, jpeg='clusters.jpg')
+    # height and width
+    h = get_height(cluster) * 20
+    w = 1200
+    depth = get_depth(cluster)
+    
+    # width is fixed, so scale distances accordingly
+    scaling = (w - 150.0)/depth
+
+    # create a new image with a white background
+    canvas = Magick::Image.new( w, h )
+    gc = Magick::Draw.new
+
+    gc.stroke( 'red' )
+    gc.line( 0, h/2, 10, h/2 )
+
+    # draw the first node
+    draw_node(gc, cluster, 10, (h/2), scaling, labels)
+
+    gc.draw(canvas)
+    canvas.write(jpeg)
+  end
+
+  def self.draw_node(gc, cluster, x, y, scaling, labels)
+    if cluster.id < 0
+      h1 = get_height(cluster.left) * 20
+      h2 = get_height(cluster.right) * 20
+      top = y - (h1 + h2)/2
+      bottom = y + (h1 + h2)/2
+      
+      # Line length
+      ll = cluster.distance * scaling
+
+      # Vertical line from this cluster to children
+      gc.stroke( 'red' )
+      gc.line( x, top + h1/2, x, bottom - h2/2 )
+
+      # horizontal line to left item
+      gc.line( x, top + h1/2, x+ll, top+h1/2 )
+
+      # horizontal line to right item
+      gc.line( x, bottom - h2/2, x + ll, bottom - h2/2 )
+
+      # call methods to draw the left and right nodes
+      draw_node(gc, cluster.left, x+ll, top+h1/2, scaling, labels)
+      draw_node(gc, cluster.right, x+ll, bottom-h2/2, scaling, labels)
+
+    else
+      # if this is an endpoint draw the item label
+      gc.stroke('transparent')
+      gc.fill('black')
+      gc.text(x+5, y, labels[cluster.id])
+
+    end
+  end
+
 end
