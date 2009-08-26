@@ -59,6 +59,22 @@ describe Clusters do
       Clusters.draw_dendrogram(@cluster, @col_names, jpeg="test.png")
     end
 
+    it "rotates the data matrix" do 
+      # rotate it once and the data should change order
+      rdata = Clusters.rotate_matrix(@data)
+      rdata.should_not == @data
+
+      # rotate it again and the data should be back to original
+      double_rdata = Clusters.rotate_matrix(rdata)
+      double_rdata.should == @data
+    end
+
+    it "draws a dendrogram with rotated data" do
+      rdata = Clusters.rotate_matrix(@data)
+      rcluster = Clusters.h_cluster(rdata)
+      Clusters.draw_dendrogram(rcluster, @row_names, jpeg="test-r.png")
+    end
+
   end
 
 end

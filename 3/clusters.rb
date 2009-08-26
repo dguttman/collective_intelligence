@@ -68,7 +68,6 @@ class Clusters
     while clusters.size > 1
       lowest_pair = [0,1]
       closest = pearson_dist(clusters[0].vec, clusters[1].vec)
-      
       # loop through every pair looking for the smallest distance
       ( 0..(clusters.size-1) ).each do |i|
         ( (i+1)..(clusters.size-1) ).each do |j|
@@ -80,6 +79,7 @@ class Clusters
               closest = d
               lowest_pair = [i, j]
             end  
+            p "lowest_pair for h_cluster: #{lowest_pair.join("-")}"      
           end
         end
       end
@@ -163,6 +163,7 @@ class Clusters
     scaling = (w - 150.0)/depth
 
     # create a new image with a white background
+    p "Creating Magick image: #{jpeg}"
     canvas = Magick::Image.new( w, h )
     gc = Magick::Draw.new
 
@@ -177,6 +178,7 @@ class Clusters
   end
 
   def self.draw_node(gc, cluster, x, y, scaling, labels)
+    p "drawing node #{cluster.id}"
     if cluster.id < 0
       h1 = get_height(cluster.left) * 20
       h2 = get_height(cluster.right) * 20
@@ -207,6 +209,19 @@ class Clusters
       gc.text(x+5, y, labels[cluster.id])
 
     end
+  end
+
+  def self.rotate_matrix(data)
+    new_data = []
+    (0...data[0].size).each do |i|
+      new_row = []
+      (0...data.size).each do |j|
+        new_row << data[j][i]
+      end
+      new_data << new_row
+    end
+
+    return new_data
   end
 
 end
