@@ -106,6 +106,11 @@ class Clusters
 
   end
 
+  def k_cluster(rows, k=4)
+    
+  end
+
+
   def self.print_cluster(cluster, labels=nil, n=0)
     # indent to make a hierarchy layout
     (0..n).each {|i| print ' ' }

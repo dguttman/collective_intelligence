@@ -1,4 +1,4 @@
-require 'clusters'
+require "clusters"
 
 describe Clusters do
   
@@ -71,7 +71,7 @@ describe Clusters do
 
     it "draws a dendrogram with rotated data" do
       rdata = Clusters.rotate_matrix(@data)
-      rcluster = Clusters.h_cluster(rdata)
+      rcluster = Clusters.h_cluster(rdata[0..20])
       Clusters.draw_dendrogram(rcluster, @row_names, jpeg="test-r.png")
     end
 
