@@ -36,6 +36,17 @@ describe Clusters do
     end
   end
 
+  describe "k-means clusters" do
+    before do
+      @cluster = Clusters.k_cluster(@data)
+    end
+
+    it "creates k-means cluster" do
+      p "kcluster : #{@cluster.inspect}"
+
+    end
+  end
+
   describe "hierarchical clusters" do
     
     before do
@@ -71,7 +82,7 @@ describe Clusters do
 
     it "draws a dendrogram with rotated data" do
       rdata = Clusters.rotate_matrix(@data)
-      rcluster = Clusters.h_cluster(rdata[0..20])
+      rcluster = Clusters.h_cluster(rdata[0..50])
       Clusters.draw_dendrogram(rcluster, @row_names, jpeg="test-r.png")
     end
 

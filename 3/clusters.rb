@@ -79,7 +79,7 @@ class Clusters
               closest = d
               lowest_pair = [i, j]
             end  
-            p "lowest_pair for h_cluster: #{lowest_pair.join("-")}"      
+            #p "lowest_pair for h_cluster: #{lowest_pair.join("-")}"      
           end
         end
       end
@@ -106,8 +106,68 @@ class Clusters
 
   end
 
-  def k_cluster(rows, k=4)
+  def self.k_cluster(rows, k=4)
+    # Determine the minimum and maximum values for each point
+    ranges = []
+  
+    (0...rows[0].size).each do |i|
+      temp_a = []
+      for row in rows
+        temp_a << row[i]
+      end
+      min = temp_a.min
+      max = temp_a.max
+      ranges << [min, max]
+    end
     
+    # Create k randomly placed centroids
+    clusters = []
+    (0...k).each do |j|
+      centroid = []
+      (0...rows[0].size).each do |i|
+        centroid << rand * (ranges[i][1] - ranges[i][0]) + ranges[i][0]
+      end
+      clusters << centroid
+    end
+
+    best_matches = Array.new(k, [])
+    last_matches = nil
+    (0...100).each do |t|
+      p "Iteration #{t}"
+      best_matches = Array.new(k, [])
+      
+      # Find which centroid is the closest for each row
+      (0...rows.size).each do |j|
+        row = rows[j]
+        best_match = 0
+        (0...k).each do |i|
+          d = pearson_dist(clusters[i], row)
+          p "d = #{d}"
+          best_match = i if d < pearson_dist(clusters[best_match], row)
+        end
+        p "best_match = #{best_match}"
+        best_matches[best_match] << j
+      end
+      break if best_matches == last_matches
+      last_matches = best_matches
+    
+      # Move the centroids to the average of their members
+      (0...k).each do |i|
+        avgs = [0.0] * rows[0].size
+        if best_matches[i].size > 0
+          best_matches[i].each do |row_id|
+            (0...rows[row_id].size).each do |m|
+              avgs[m] += rows[row_id][m]
+            end
+          end
+          (0...avgs.size).each do |j|
+            avgs[j] /= best_matches[i].size
+          end
+          clusters[i]=avgs
+        end
+      end
+    end 
+    return best_matches
   end
 
 
@@ -183,7 +243,7 @@ class Clusters
   end
 
   def self.draw_node(gc, cluster, x, y, scaling, labels)
-    p "drawing node #{cluster.id}"
+    #p "drawing node #{cluster.id}"
     if cluster.id < 0
       h1 = get_height(cluster.left) * 20
       h2 = get_height(cluster.right) * 20
