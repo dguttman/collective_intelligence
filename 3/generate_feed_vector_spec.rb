@@ -45,7 +45,7 @@ describe FeedVectorGenerator do
   end
   
   it "should generate blogdata file" do
-    FeedVectorGenerator.create_matrix(File.open("feedlist.txt", "r").readlines[0..10], "blogdata")
+    FeedVectorGenerator.create_matrix(File.open("feedlist.txt", "r").readlines[0..20], "blogdata")
   end
   
 end

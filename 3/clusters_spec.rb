@@ -3,7 +3,7 @@ require "clusters"
 describe Clusters do
   
   before do 
-    @col_names, @row_names, @data = Clusters.read_file("blogdata.txt")
+    @row_names, @col_names, @data = Clusters.read_file("blogdata.txt")
   end
 
   it "convert formatted file to usable data" do
@@ -38,11 +38,25 @@ describe Clusters do
 
   describe "k-means clusters" do
     before do
-      @cluster = Clusters.k_cluster(@data)
+      @clusters = Clusters.k_cluster(@data)
     end
 
     it "creates k-means cluster" do
-      p "kcluster : #{@cluster.inspect}"
+      @clusters.each_with_index do |cluster, i|
+        cluster.should_not == @clusters[i+1] if @clusters[i+1]
+        cluster.should_not == @clusters[i-1] if @clusters[i-1]
+      end
+      
+      p "kcluster : #{@clusters.inspect}"
+      
+      @clusters.each_with_index do |cluster, i|
+        p "Cluster #{i}"
+        p "--------------------"
+        cluster.each do |k|
+          p @row_names[k]
+        end        
+        p "--------------------"
+      end
 
     end
   end
@@ -58,7 +72,7 @@ describe Clusters do
     end
 
     it "prints clusters" do
-      Clusters.print_cluster(@cluster, @col_names)
+      Clusters.print_cluster(@cluster, @row_names)
     end
 
     it "gets height of node" do  
@@ -67,7 +81,7 @@ describe Clusters do
     end
 
     it "draws the dendrogram" do
-      Clusters.draw_dendrogram(@cluster, @col_names, jpeg="test.png")
+      Clusters.draw_dendrogram(@cluster, @row_names, jpeg="test.png")
     end
 
     it "rotates the data matrix" do 
@@ -83,7 +97,7 @@ describe Clusters do
     it "draws a dendrogram with rotated data" do
       rdata = Clusters.rotate_matrix(@data)
       rcluster = Clusters.h_cluster(rdata[0..50])
-      Clusters.draw_dendrogram(rcluster, @row_names, jpeg="test-r.png")
+      Clusters.draw_dendrogram(rcluster, @col_names, jpeg="test-r.png")
     end
 
   end

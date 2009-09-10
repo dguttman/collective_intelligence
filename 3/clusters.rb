@@ -25,7 +25,20 @@ class Clusters
     
     return row_names, col_names, data
   end
-  
+
+  def self.tanamoto_dist(vector_a, vector_b)
+    c1, c2, shared = 0, 0, 0
+
+    for i in (0...vector_a.size)
+      c1 += 1 if vector_a[i] != 0 # in vector_a
+      c2 += 1 if vector_b[i] != 0 # in vector_b
+      shared += 1 if vector_a[i] != 0 && vector_b[i] != 0 # in both
+    end
+
+    return 1.0 - ( shared.to_f / (c1 + c2 - shared) )
+
+  end
+
   def self.pearson_dist(vector_a, vector_b)
 
     n = vector_a.size
@@ -130,14 +143,13 @@ class Clusters
       clusters << centroid
     end
 
-    best_matches = Array.new(k, [])
     last_matches = nil
     (0...100).each do |t|
       p "Iteration #{t}"
-      best_matches = Array.new(k, [])
+      best_matches = Array.new(k) { [] }
       
       # Find which centroid is the closest for each row
-      (0...rows.size).each do |j|
+      rows.each_index do |j|
         row = rows[j]
         best_match = 0
         (0...k).each do |i|
@@ -147,8 +159,13 @@ class Clusters
         end
         p "best_match = #{best_match}"
         best_matches[best_match] << j
+        p "best_matches: #{best_matches.inspect}"
       end
+
+
+      # if the results are the same as last time this is complete
       break if best_matches == last_matches
+
       last_matches = best_matches
     
       # Move the centroids to the average of their members
@@ -165,9 +182,9 @@ class Clusters
           end
           clusters[i]=avgs
         end
+        return best_matches
       end
     end 
-    return best_matches
   end
 
 
